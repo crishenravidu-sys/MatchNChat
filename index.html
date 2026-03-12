@@ -1,0 +1,2336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatchNChat - Connect. Match. Chat.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Space Grotesk', 'sans-serif'],
+                        body: ['DM Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #242424;
+            --bg-elevated: #2a2a2a;
+            --fg-primary: #fafafa;
+            --fg-secondary: #a3a3a3;
+            --fg-muted: #6b6b6b;
+            --accent: #ff6b4a;
+            --accent-light: #ff8a6f;
+            --accent-dark: #e55a3a;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --error: #f87171;
+            --border: #333333;
+            --glass: rgba(255, 107, 74, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--fg-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        /* Typography */
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Gradient Backgrounds */
+        .gradient-mesh {
+            background: 
+                radial-gradient(ellipse at 20% 0%, rgba(255, 107, 74, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(255, 138, 111, 0.1) 0%, transparent 50%),
+                var(--bg-primary);
+        }
+
+        .gradient-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+        }
+
+        /* Glass Effect */
+        .glass {
+            background: rgba(36, 36, 36, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-primary:hover::before {
+            opacity: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 74, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--fg-primary);
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-elevated);
+            border-color: var(--accent);
+        }
+
+        .btn-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-icon.like {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+        }
+
+        .btn-icon.skip {
+            background: linear-gradient(135deg, #6b6b6b 0%, #555555 100%);
+        }
+
+        .btn-icon.super {
+            background: linear-gradient(135deg, #4a9fff 0%, #3a8aee 100%);
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-icon:active {
+            transform: scale(0.95);
+        }
+
+        /* Cards */
+        .profile-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: grab;
+        }
+
+        .profile-card:active {
+            cursor: grabbing;
+        }
+
+        .profile-card.swiping-left {
+            transform: translateX(-150%) rotate(-15deg);
+            opacity: 0;
+        }
+
+        .profile-card.swiping-right {
+            transform: translateX(150%) rotate(15deg);
+            opacity: 0;
+        }
+
+        .profile-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+            pointer-events: none;
+        }
+
+        /* Input Styles */
+        .input-field {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--fg-primary);
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: var(--fg-muted);
+        }
+
+        /* Page Transitions */
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Chat Styles */
+        .chat-bubble {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            margin-bottom: 8px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .chat-bubble.sent {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble.received {
+            background: var(--bg-elevated);
+            color: var(--fg-primary);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Notification Badge */
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        /* Photo Grid */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .photo-item {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .photo-item:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-elevated);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--fg-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            max-width: 480px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-elevated);
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Mobile Nav */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 8px 16px;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            color: var(--fg-muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item:hover {
+            color: var(--accent-light);
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Progress Ring */
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            stroke: var(--accent);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s;
+        }
+
+        /* Hero Decoration */
+        .hero-decoration {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Match Animation */
+        .match-animation {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .match-animation.active {
+            display: flex;
+        }
+
+        .match-content {
+            text-align: center;
+            animation: pulse 0.6s ease-out;
+        }
+
+        /* Stagger Animation */
+        .stagger-item {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .stagger-item.visible {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="gradient-mesh">
+    <!-- Desktop Navigation -->
+    <nav id="desktopNav" class="hidden md:flex fixed top-0 left-0 right-0 z-50 glass px-6 py-4 items-center justify-between">
+        <a href="#" class="font-display text-2xl font-bold text-white flex items-center gap-2" onclick="navigateTo('home')">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <circle cx="12" cy="12" r="8" stroke="#ff6b4a" stroke-width="2.5"/>
+                <circle cx="20" cy="20" r="8" stroke="#ff8a6f" stroke-width="2.5"/>
+            </svg>
+            MatchNChat
+        </a>
+        <div id="navButtons" class="flex items-center gap-4">
+            <button class="btn-secondary" onclick="navigateTo('login')">Login</button>
+            <button class="btn-primary" onclick="navigateTo('signup')"><span>Sign Up</span></button>
+        </div>
+        <div id="userNav" class="hidden items-center gap-6">
+            <button class="nav-item" onclick="navigateTo('browse')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Discover
+            </button>
+            <button class="nav-item" onclick="navigateTo('matches')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                Matches
+            </button>
+            <button class="nav-item" onclick="navigateTo('chat')" style="position: relative;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                Chat
+                <span id="chatNotification" class="notification-badge hidden">0</span>
+            </button>
+            <div class="relative">
+                <button id="profileDropdownBtn" class="flex items-center gap-2" onclick="toggleDropdown()">
+                    <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-[var(--accent)] transition-all">
+                        <img id="navProfilePic" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Profile" class="w-full h-full object-cover">
+                    </div>
+                </button>
+                <div id="profileDropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-[var(--bg-card)] rounded-xl border border-[var(--border)] overflow-hidden shadow-xl">
+                    <button class="w-full px-4 py-3 text-left hover:bg-[var(--bg-elevated)] transition-colors" onclick="navigateTo('profile')">My Profile</button>
+                    <button class="w-full px-4 py-3 text-left hover:bg-[var(--bg-elevated)] transition-colors" onclick="navigateTo('settings')">Settings</button>
+                    <button class="w-full px-4 py-3 text-left hover:bg-[var(--bg-elevated)] transition-colors" onclick="navigateTo('subscription')">Subscription</button>
+                    <hr class="border-[var(--border)]">
+                    <button class="w-full px-4 py-3 text-left text-[var(--error)] hover:bg-[var(--bg-elevated)] transition-colors" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation -->
+    <div id="mobileNav" class="mobile-nav md:hidden">
+        <button class="nav-item active" data-page="home" onclick="navigateTo('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" data-page="browse" onclick="navigateTo('browse')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <span>Discover</span>
+        </button>
+        <button class="nav-item" data-page="matches" onclick="navigateTo('matches')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+            <span>Matches</span>
+        </button>
+        <button class="nav-item" data-page="chat" onclick="navigateTo('chat')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <span>Chat</span>
+            <span id="mobileChatNotification" class="notification-badge hidden">0</span>
+        </button>
+        <button class="nav-item" data-page="profile" onclick="navigateTo('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <span>Profile</span>
+        </button>
+    </div>
+
+    <!-- Pages Container -->
+    <main id="pagesContainer" class="pb-20 md:pb-0 md:pt-20">
+        
+        <!-- HOME PAGE -->
+        <div id="page-home" class="page active">
+            <section class="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden">
+                <!-- Decorative Elements -->
+                <div class="hero-decoration bg-[var(--accent)]" style="top: -200px; left: -100px;"></div>
+                <div class="hero-decoration bg-[var(--accent-light)]" style="bottom: -200px; right: -100px;"></div>
+                
+                <div class="max-w-4xl mx-auto text-center relative z-10">
+                    <div class="stagger-item mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--glass)] border border-[var(--accent)]" style="border-color: rgba(255,107,74,0.3);">
+                        <span class="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse"></span>
+                        <span class="text-sm text-[var(--fg-secondary)]">2,847 people online near you</span>
+                    </div>
+                    
+                    <h1 class="stagger-item font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+                        <span class="text-white">Connect.</span><br>
+                        <span style="color: var(--accent);">Match.</span>
+                        <span class="text-white">Chat.</span>
+                    </h1>
+                    
+                    <p class="stagger-item text-xl md:text-2xl text-[var(--fg-secondary)] mb-10 max-w-2xl mx-auto">
+                        Discover meaningful connections with people nearby. Your next great conversation is just a match away.
+                    </p>
+                    
+                    <div class="stagger-item flex flex-col sm:flex-row gap-4 justify-center">
+                        <button class="btn-primary text-lg px-10 py-4" onclick="navigateTo('signup')">
+                            <span>Get Started Free</span>
+                        </button>
+                        <button class="btn-secondary text-lg px-10 py-4" onclick="navigateTo('login')">
+                            I Have an Account
+                        </button>
+                    </div>
+                    
+                    <div class="stagger-item mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">
+                        <div class="text-center">
+                            <div class="text-3xl font-display font-bold text-white">1M+</div>
+                            <div class="text-sm text-[var(--fg-muted)]">Active Users</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-display font-bold text-white">5M+</div>
+                            <div class="text-sm text-[var(--fg-muted)]">Matches Made</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-display font-bold text-white">50+</div>
+                            <div class="text-sm text-[var(--fg-muted)]">Countries</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Floating Cards Preview -->
+                <div class="hidden lg:block absolute right-20 top-1/2 -translate-y-1/2 animate-float" style="animation-delay: 0.2s;">
+                    <div class="w-64 h-80 rounded-3xl overflow-hidden shadow-2xl transform rotate-6">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=400&fit=crop" alt="User" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="hidden lg:block absolute left-20 top-1/2 -translate-y-1/2 animate-float" style="animation-delay: 0.5s;">
+                    <div class="w-64 h-80 rounded-3xl overflow-hidden shadow-2xl transform -rotate-6">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop" alt="User" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Features Section -->
+            <section class="py-20 px-6">
+                <div class="max-w-6xl mx-auto">
+                    <div class="text-center mb-16">
+                        <h2 class="font-display text-4xl md:text-5xl font-bold mb-4">Why MatchNChat?</h2>
+                        <p class="text-[var(--fg-secondary)] text-lg">Built for real connections, not endless scrolling</p>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="stagger-item gradient-card p-8 rounded-3xl border border-[var(--border)]">
+                            <div class="w-14 h-14 rounded-2xl bg-[var(--glass)] flex items-center justify-center mb-6">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-xl font-semibold mb-3">Location-Based</h3>
+                            <p class="text-[var(--fg-secondary)]">Find people in your area who share your interests and are looking to connect.</p>
+                        </div>
+                        
+                        <div class="stagger-item gradient-card p-8 rounded-3xl border border-[var(--border)]">
+                            <div class="w-14 h-14 rounded-2xl bg-[var(--glass)] flex items-center justify-center mb-6">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-xl font-semibold mb-3">Smart Matching</h3>
+                            <p class="text-[var(--fg-secondary)]">Our algorithm learns your preferences to show you more relevant profiles over time.</p>
+                        </div>
+                        
+                        <div class="stagger-item gradient-card p-8 rounded-3xl border border-[var(--border)]">
+                            <div class="w-14 h-14 rounded-2xl bg-[var(--glass)] flex items-center justify-center mb-6">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-xl font-semibold mb-3">Real-Time Chat</h3>
+                            <p class="text-[var(--fg-secondary)]">Message instantly with matches, share photos, and even send your live location.</p>
+                        </div>
+                        
+                        <div class="stagger-item gradient-card p-8 rounded-3xl border border-[var(--border)]">
+                            <div class="w-14 h-14 rounded-2xl bg-[var(--glass)] flex items-center justify-center mb-6">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-xl font-semibold mb-3">Verified Profiles</h3>
+                            <p class="text-[var(--fg-secondary)]">Profile verification ensures you're connecting with real people, not bots.</p>
+                        </div>
+                        
+                        <div class="stagger-item gradient-card p-8 rounded-3xl border border-[var(--border)]">
+                            <div class="w-14 h-14 rounded-2xl bg-[var(--glass)] flex items-center justify-center mb-6">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                    <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-xl font-semibold mb-3">Smart Notifications</h3>
+                            <p class="text-[var(--fg-secondary)]">Get notified instantly when someone likes you or when you have a new match.</p>
+                        </div>
+                        
+                        <div class="stagger-item gradient-card p-8 rounded-3xl border border-[var(--border)]">
+                            <div class="w-14 h-14 rounded-2xl bg-[var(--glass)] flex items-center justify-center mb-6">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                    <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-xl font-semibold mb-3">Affordable Premium</h3>
+                            <p class="text-[var(--fg-secondary)]">Just $1/month for unlimited messaging and premium features. No hidden fees.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- CTA Section -->
+            <section class="py-20 px-6">
+                <div class="max-w-4xl mx-auto text-center gradient-card rounded-[32px] p-12 md:p-16 border border-[var(--border)] relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-[var(--accent)] to-transparent opacity-10"></div>
+                    <div class="relative z-10">
+                        <h2 class="font-display text-3xl md:text-5xl font-bold mb-6">Ready to Meet Someone New?</h2>
+                        <p class="text-[var(--fg-secondary)] text-lg mb-8 max-w-xl mx-auto">Join millions of people who have already found meaningful connections on MatchNChat.</p>
+                        <button class="btn-primary text-lg px-12 py-4" onclick="navigateTo('signup')">
+                            <span>Create Free Account</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SIGNUP PAGE -->
+        <div id="page-signup" class="page">
+            <div class="min-h-screen flex items-center justify-center px-6 py-12">
+                <div class="w-full max-w-md">
+                    <div class="text-center mb-8">
+                        <a href="#" class="inline-flex items-center gap-2 mb-6" onclick="navigateTo('home')">
+                            <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+                                <circle cx="12" cy="12" r="8" stroke="#ff6b4a" stroke-width="2.5"/>
+                                <circle cx="20" cy="20" r="8" stroke="#ff8a6f" stroke-width="2.5"/>
+                            </svg>
+                            <span class="font-display text-2xl font-bold text-white">MatchNChat</span>
+                        </a>
+                        <h1 class="font-display text-3xl font-bold mb-2">Create Your Account</h1>
+                        <p class="text-[var(--fg-secondary)]">Join millions finding meaningful connections</p>
+                    </div>
+                    
+                    <form id="signupForm" class="space-y-5" onsubmit="handleSignup(event)">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">First Name</label>
+                                <input type="text" name="firstName" class="input-field" placeholder="John" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Last Name</label>
+                                <input type="text" name="lastName" class="input-field" placeholder="Doe" required>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" name="email" class="input-field" placeholder="john@example.com" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Password</label>
+                            <input type="password" name="password" class="input-field" placeholder="Min 8 characters" minlength="8" required>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Age</label>
+                                <input type="number" name="age" class="input-field" placeholder="25" min="18" max="100" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Gender</label>
+                                <select name="gender" class="input-field" required>
+                                    <option value="">Select</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Location</label>
+                            <input type="text" name="location" class="input-field" placeholder="New York, NY" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Bio</label>
+                            <textarea name="bio" class="input-field resize-none" rows="3" placeholder="Tell us about yourself..." maxlength="300"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Profile Photos</label>
+                            <div id="photoUploadArea" class="grid grid-cols-5 gap-2">
+                                <label class="photo-item bg-[var(--bg-elevated)] border-2 border-dashed border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer flex items-center justify-center">
+                                    <input type="file" class="hidden" accept="image/*" onchange="handlePhotoUpload(event)">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--fg-muted)" stroke-width="2">
+                                        <path d="M12 5v14m-7-7h14"/>
+                                    </svg>
+                                </label>
+                            </div>
+                            <p class="text-xs text-[var(--fg-muted)] mt-2">Upload 3-5 photos</p>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <input type="checkbox" id="terms" class="mt-1" required>
+                            <label for="terms" class="text-sm text-[var(--fg-secondary)]">
+                                I agree to the <a href="#" class="text-[var(--accent)] hover:underline">Terms of Service</a> and <a href="#" class="text-[var(--accent)] hover:underline">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary w-full text-lg py-4">
+                            <span>Create Account</span>
+                        </button>
+                    </form>
+                    
+                    <p class="text-center mt-6 text-[var(--fg-secondary)]">
+                        Already have an account? <button onclick="navigateTo('login')" class="text-[var(--accent)] hover:underline font-medium">Login</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOGIN PAGE -->
+        <div id="page-login" class="page">
+            <div class="min-h-screen flex items-center justify-center px-6 py-12">
+                <div class="w-full max-w-md">
+                    <div class="text-center mb-8">
+                        <a href="#" class="inline-flex items-center gap-2 mb-6" onclick="navigateTo('home')">
+                            <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+                                <circle cx="12" cy="12" r="8" stroke="#ff6b4a" stroke-width="2.5"/>
+                                <circle cx="20" cy="20" r="8" stroke="#ff8a6f" stroke-width="2.5"/>
+                            </svg>
+                            <span class="font-display text-2xl font-bold text-white">MatchNChat</span>
+                        </a>
+                        <h1 class="font-display text-3xl font-bold mb-2">Welcome Back</h1>
+                        <p class="text-[var(--fg-secondary)]">Login to continue your journey</p>
+                    </div>
+                    
+                    <form id="loginForm" class="space-y-5" onsubmit="handleLogin(event)">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" name="email" class="input-field" placeholder="john@example.com" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Password</label>
+                            <input type="password" name="password" class="input-field" placeholder="Your password" required>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="rounded">
+                                <span class="text-sm text-[var(--fg-secondary)]">Remember me</span>
+                            </label>
+                            <a href="#" class="text-sm text-[var(--accent)] hover:underline">Forgot password?</a>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary w-full text-lg py-4">
+                            <span>Login</span>
+                        </button>
+                    </form>
+                    
+                    <p class="text-center mt-6 text-[var(--fg-secondary)]">
+                        Don't have an account? <button onclick="navigateTo('signup')" class="text-[var(--accent)] hover:underline font-medium">Sign Up</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- BROWSE PROFILES PAGE -->
+        <div id="page-browse" class="page">
+            <div class="min-h-screen px-4 py-6 md:py-8">
+                <div class="max-w-lg mx-auto">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h1 class="font-display text-2xl font-bold">Discover</h1>
+                            <p class="text-sm text-[var(--fg-secondary)]" id="nearbyCount">12 people nearby</p>
+                        </div>
+                        <button class="btn-icon bg-[var(--bg-elevated)]" onclick="openFilters()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Card Stack -->
+                    <div id="cardStack" class="relative h-[500px] md:h-[600px]">
+                        <!-- Cards will be rendered here -->
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-center gap-4 mt-6">
+                        <button class="btn-icon skip w-14 h-14" onclick="handleSkip()">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                <path d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                        <button class="btn-icon super w-16 h-16" onclick="handleSuperLike()">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                        </button>
+                        <button class="btn-icon like w-14 h-14" onclick="handleLike()">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
+                                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MATCHES PAGE -->
+        <div id="page-matches" class="page">
+            <div class="min-h-screen px-4 py-6 md:py-8">
+                <div class="max-w-2xl mx-auto">
+                    <h1 class="font-display text-2xl font-bold mb-6">Your Matches</h1>
+                    
+                    <!-- New Matches -->
+                    <div class="mb-8">
+                        <h2 class="text-lg font-semibold mb-4 text-[var(--fg-secondary)]">New Matches</h2>
+                        <div id="newMatchesList" class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4">
+                            <!-- Matches rendered here -->
+                        </div>
+                    </div>
+                    
+                    <!-- All Matches Grid -->
+                    <div>
+                        <h2 class="text-lg font-semibold mb-4 text-[var(--fg-secondary)]">All Matches</h2>
+                        <div id="allMatchesGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- All matches rendered here -->
+                        </div>
+                        <div id="noMatches" class="hidden text-center py-16">
+                            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--fg-muted)" stroke-width="1.5">
+                                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-xl font-semibold mb-2">No Matches Yet</h3>
+                            <p class="text-[var(--fg-secondary)] mb-6">Start browsing to find your first match!</p>
+                            <button class="btn-primary" onclick="navigateTo('browse')"><span>Discover People</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAT PAGE -->
+        <div id="page-chat" class="page">
+            <div class="min-h-screen flex flex-col md:flex-row">
+                <!-- Conversations List -->
+                <div id="conversationsList" class="w-full md:w-80 lg:w-96 border-r border-[var(--border)] flex-shrink-0">
+                    <div class="p-4 border-b border-[var(--border)]">
+                        <h1 class="font-display text-2xl font-bold mb-4">Messages</h1>
+                        <div class="relative">
+                            <input type="text" class="input-field pl-10" placeholder="Search conversations...">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--fg-muted)" stroke-width="2">
+                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div id="chatList" class="overflow-y-auto" style="max-height: calc(100vh - 200px);">
+                        <!-- Chat list items rendered here -->
+                    </div>
+                    <div id="noChats" class="hidden text-center py-16 px-4">
+                        <p class="text-[var(--fg-secondary)]">No conversations yet. Match with someone to start chatting!</p>
+                    </div>
+                </div>
+                
+                <!-- Chat Window -->
+                <div id="chatWindow" class="hidden md:flex flex-1 flex-col bg-[var(--bg-secondary)]">
+                    <div id="chatPlaceholder" class="flex-1 flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--fg-muted)" stroke-width="1.5">
+                                    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-xl font-semibold mb-2">Select a Conversation</h3>
+                            <p class="text-[var(--fg-secondary)]">Choose a match to start messaging</p>
+                        </div>
+                    </div>
+                    <div id="activeChat" class="hidden flex-1 flex flex-col">
+                        <div id="chatHeader" class="p-4 border-b border-[var(--border)] flex items-center gap-4">
+                            <button class="md:hidden" onclick="backToChatList()">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <div class="w-12 h-12 rounded-full overflow-hidden">
+                                <img id="chatUserPhoto" src="" alt="" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1">
+                                <h3 id="chatUserName" class="font-semibold"></h3>
+                                <p id="chatUserStatus" class="text-sm text-[var(--success)]">Online</p>
+                            </div>
+                            <button onclick="openChatOptions()">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-2">
+                            <!-- Messages rendered here -->
+                        </div>
+                        <div id="chatInput" class="p-4 border-t border-[var(--border)]">
+                            <div class="flex items-end gap-3">
+                                <div class="flex gap-2">
+                                    <button class="w-10 h-10 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center hover:bg-[var(--bg-card)] transition-colors" onclick="attachPhoto()">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="w-10 h-10 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center hover:bg-[var(--bg-card)] transition-colors" onclick="shareLocation()">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="flex-1 relative">
+                                    <input type="text" id="messageInput" class="input-field pr-12" placeholder="Type a message..." onkeypress="handleMessageKeypress(event)">
+                                    <button class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center" onclick="sendMessage()">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div id="page-profile" class="page">
+            <div class="min-h-screen px-4 py-6 md:py-8">
+                <div class="max-w-2xl mx-auto">
+                    <!-- Profile Header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <h1 class="font-display text-2xl font-bold">My Profile</h1>
+                        <button class="btn-secondary" onclick="toggleEditMode()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline mr-2">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Edit
+                        </button>
+                    </div>
+                    
+                    <!-- Profile Card -->
+                    <div class="gradient-card rounded-3xl overflow-hidden border border-[var(--border)]">
+                        <!-- Cover Photo -->
+                        <div class="h-40 md:h-52 relative">
+                            <img id="profileCover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop" alt="" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-[var(--bg-card)] to-transparent"></div>
+                        </div>
+                        
+                        <!-- Profile Info -->
+                        <div class="px-6 pb-6 -mt-16 relative">
+                            <div class="flex items-end gap-4 mb-6">
+                                <div class="w-28 h-28 rounded-2xl overflow-hidden border-4 border-[var(--bg-card)] shadow-xl">
+                                    <img id="profileMainPhoto" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop" alt="" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1 pb-2">
+                                    <h2 id="profileName" class="font-display text-2xl font-bold">John Doe, 28</h2>
+                                    <p id="profileLocation" class="text-[var(--fg-secondary)] flex items-center gap-1">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        </svg>
+                                        New York, NY
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <p id="profileBio" class="text-[var(--fg-secondary)] mb-6">Adventure seeker and coffee enthusiast. Love hiking, photography, and trying new restaurants. Looking for someone to share experiences with.</p>
+                            
+                            <!-- Stats -->
+                            <div class="grid grid-cols-3 gap-4 mb-6">
+                                <div class="text-center p-4 rounded-xl bg-[var(--bg-elevated)]">
+                                    <div class="font-display text-2xl font-bold text-[var(--accent)]" id="profileLikes">24</div>
+                                    <div class="text-sm text-[var(--fg-muted)]">Likes</div>
+                                </div>
+                                <div class="text-center p-4 rounded-xl bg-[var(--bg-elevated)]">
+                                    <div class="font-display text-2xl font-bold text-[var(--accent)]" id="profileMatches">8</div>
+                                    <div class="text-sm text-[var(--fg-muted)]">Matches</div>
+                                </div>
+                                <div class="text-center p-4 rounded-xl bg-[var(--bg-elevated)]">
+                                    <div class="font-display text-2xl font-bold text-[var(--accent)]" id="profileViews">156</div>
+                                    <div class="text-sm text-[var(--fg-muted)]">Views</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Photo Gallery -->
+                    <div class="mt-6">
+                        <h3 class="font-semibold mb-4">Photo Gallery</h3>
+                        <div id="profilePhotoGrid" class="photo-grid">
+                            <!-- Photos rendered here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Profile Form (hidden by default) -->
+                    <div id="editProfileForm" class="hidden mt-6 gradient-card rounded-3xl p-6 border border-[var(--border)]">
+                        <h3 class="font-display text-xl font-semibold mb-4">Edit Profile</h3>
+                        <form class="space-y-4" onsubmit="saveProfile(event)">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Name</label>
+                                <input type="text" name="name" class="input-field" id="editName">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Age</label>
+                                <input type="number" name="age" class="input-field" id="editAge">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Location</label>
+                                <input type="text" name="location" class="input-field" id="editLocation">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Bio</label>
+                                <textarea name="bio" class="input-field resize-none" rows="3" id="editBio"></textarea>
+                            </div>
+                            <div class="flex gap-3">
+                                <button type="button" class="btn-secondary flex-1" onclick="toggleEditMode()">Cancel</button>
+                                <button type="submit" class="btn-primary flex-1"><span>Save Changes</span></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS PAGE -->
+        <div id="page-settings" class="page">
+            <div class="min-h-screen px-4 py-6 md:py-8">
+                <div class="max-w-2xl mx-auto">
+                    <h1 class="font-display text-2xl font-bold mb-6">Settings</h1>
+                    
+                    <!-- Account Settings -->
+                    <div class="gradient-card rounded-3xl p-6 border border-[var(--border)] mb-6">
+                        <h3 class="font-semibold mb-4">Account</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between py-3 border-b border-[var(--border)]">
+                                <div>
+                                    <p class="font-medium">Email</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]" id="settingsEmail">john@example.com</p>
+                                </div>
+                                <button class="text-[var(--accent)]">Change</button>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-b border-[var(--border)]">
+                                <div>
+                                    <p class="font-medium">Password</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Last changed 30 days ago</p>
+                                </div>
+                                <button class="text-[var(--accent)]">Change</button>
+                            </div>
+                            <div class="flex items-center justify-between py-3">
+                                <div>
+                                    <p class="font-medium">Phone Number</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Not added</p>
+                                </div>
+                                <button class="text-[var(--accent)]">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Privacy Settings -->
+                    <div class="gradient-card rounded-3xl p-6 border border-[var(--border)] mb-6">
+                        <h3 class="font-semibold mb-4">Privacy</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between py-3 border-b border-[var(--border)]">
+                                <div>
+                                    <p class="font-medium">Show Distance</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Let others see how far you are</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-[var(--bg-elevated)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-b border-[var(--border)]">
+                                <div>
+                                    <p class="font-medium">Show Online Status</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Let others see when you're online</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-[var(--bg-elevated)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between py-3">
+                                <div>
+                                    <p class="font-medium">Incognito Mode</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Browse without being seen</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-[var(--bg-elevated)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <div class="gradient-card rounded-3xl p-6 border border-[var(--border)] mb-6">
+                        <h3 class="font-semibold mb-4">Notifications</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between py-3 border-b border-[var(--border)]">
+                                <div>
+                                    <p class="font-medium">Push Notifications</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Get notified about matches and messages</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-[var(--bg-elevated)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between py-3">
+                                <div>
+                                    <p class="font-medium">Email Notifications</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Weekly digest and updates</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-[var(--bg-elevated)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Danger Zone -->
+                    <div class="gradient-card rounded-3xl p-6 border border-[var(--border)]">
+                        <h3 class="font-semibold mb-4 text-[var(--error)]">Danger Zone</h3>
+                        <div class="space-y-4">
+                            <button class="w-full py-3 px-4 rounded-xl border border-[var(--border)] text-left hover:bg-[var(--bg-elevated)] transition-colors flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Block List</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Manage blocked users</p>
+                                </div>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                            <button class="w-full py-3 px-4 rounded-xl border border-[var(--error)] text-[var(--error)] text-left hover:bg-red-500/10 transition-colors">
+                                Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUBSCRIPTION PAGE -->
+        <div id="page-subscription" class="page">
+            <div class="min-h-screen px-4 py-6 md:py-8">
+                <div class="max-w-lg mx-auto">
+                    <h1 class="font-display text-2xl font-bold mb-2">Upgrade to Premium</h1>
+                    <p class="text-[var(--fg-secondary)] mb-8">Unlock all features for just $1/month</p>
+                    
+                    <!-- Features -->
+                    <div class="gradient-card rounded-3xl p-6 border border-[var(--border)] mb-6">
+                        <h3 class="font-semibold mb-4">Premium Features</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-[var(--glass)] flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">Unlimited Messaging</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Chat with all your matches</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-[var(--glass)] flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                        <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">Photo Sharing</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Send photos in chat</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-[var(--glass)] flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                        <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">Live Location Sharing</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Share where you are with matches</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-[var(--glass)] flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                        <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">Priority Notifications</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Be first to know about new matches</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-[var(--glass)] flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                                        <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">5 Super Likes Per Day</p>
+                                    <p class="text-sm text-[var(--fg-secondary)]">Stand out from the crowd</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pricing Card -->
+                    <div class="gradient-card rounded-3xl p-6 border-2 border-[var(--accent)] relative overflow-hidden">
+                        <div class="absolute top-4 right-4 bg-[var(--accent)] text-white text-xs font-bold px-3 py-1 rounded-full">BEST VALUE</div>
+                        <div class="text-center mb-6">
+                            <div class="text-5xl font-display font-bold mb-1">$1</div>
+                            <div class="text-[var(--fg-secondary)]">per month</div>
+                        </div>
+                        <button class="btn-primary w-full text-lg py-4 mb-4" onclick="handleSubscription()">
+                            <span>Subscribe Now</span>
+                        </button>
+                        <p class="text-xs text-center text-[var(--fg-muted)]">Cancel anytime. No hidden fees.</p>
+                    </div>
+                    
+                    <!-- Payment Methods Preview -->
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-[var(--fg-secondary)] mb-3">Secure payment with</p>
+                        <div class="flex items-center justify-center gap-4">
+                            <div class="px-4 py-2 bg-[var(--bg-elevated)] rounded-lg text-sm font-medium">Stripe</div>
+                            <div class="px-4 py-2 bg-[var(--bg-elevated)] rounded-lg text-sm font-medium">PayPal</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Match Animation Overlay -->
+    <div id="matchAnimation" class="match-animation">
+        <div class="match-content">
+            <div class="flex items-center justify-center gap-4 mb-6">
+                <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-[var(--accent)]">
+                    <img id="matchUser1Photo" src="" alt="" class="w-full h-full object-cover">
+                </div>
+                <div class="text-4xl">+</div>
+                <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-[var(--accent)]">
+                    <img id="matchUser2Photo" src="" alt="" class="w-full h-full object-cover">
+                </div>
+            </div>
+            <h2 class="font-display text-4xl font-bold mb-4" style="color: var(--accent);">It's a Match!</h2>
+            <p class="text-[var(--fg-secondary)] mb-6">You and <span id="matchUserName"></span> liked each other</p>
+            <div class="flex gap-3">
+                <button class="btn-secondary" onclick="closeMatchAnimation()">Keep Browsing</button>
+                <button class="btn-primary" onclick="startChatWithMatch()"><span>Send Message</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // ============== DATA ==============
+        const sampleUsers = [
+            {
+                id: 1,
+                name: "Emma Wilson",
+                age: 26,
+                location: "Brooklyn, NY",
+                distance: "2.3 mi",
+                bio: "Coffee addict and bookworm. Love exploring new cafes and finding hidden gems in the city. Always up for a spontaneous adventure!",
+                photos: [
+                    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop",
+                    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop",
+                    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop"
+                ],
+                verified: true
+            },
+            {
+                id: 2,
+                name: "Sophia Chen",
+                age: 24,
+                location: "Manhattan, NY",
+                distance: "0.8 mi",
+                bio: "Yoga instructor and plant mom. Looking for someone who appreciates the little things in life. Dog lover a plus!",
+                photos: [
+                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=600&fit=crop",
+                    "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop"
+                ],
+                verified: true
+            },
+            {
+                id: 3,
+                name: "Olivia Martinez",
+                age: 28,
+                location: "Queens, NY",
+                distance: "4.1 mi",
+                bio: "Artist and world traveler. I collect passport stamps and stories. Looking for a partner in crime for my next adventure.",
+                photos: [
+                    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=600&fit=crop",
+                    "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=400&h=400&fit=crop",
+                    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop"
+                ],
+                verified: false
+            },
+            {
+                id: 4,
+                name: "Ava Thompson",
+                age: 25,
+                location: "Jersey City, NJ",
+                distance: "3.5 mi",
+                bio: "Marketing professional by day, food blogger by night. Let me take you on a culinary journey!",
+                photos: [
+                    "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=600&fit=crop",
+                    "https://images.unsplash.com/photo-1496440737103-cd596325d314?w=400&h=400&fit=crop"
+                ],
+                verified: true
+            },
+            {
+                id: 5,
+                name: "Mia Johnson",
+                age: 27,
+                location: "Hoboken, NJ",
+                distance: "2.9 mi",
+                bio: "Software engineer who loves hiking and board games. Looking for my player two!",
+                photos: [
+                    "https://images.unsplash.com/photo-1502323777036-f29e3972f44b?w=400&h=600&fit=crop",
+                    "https://images.unsplash.com/photo-1519742866993-66d3cfef4bbd?w=400&h=400&fit=crop"
+                ],
+                verified: false
+            },
+            {
+                id: 6,
+                name: "Isabella Davis",
+                age: 29,
+                location: "Manhattan, NY",
+                distance: "1.2 mi",
+                bio: "Architect designing my way through life. Passionate about sustainable living and urban gardening.",
+                photos: [
+                    "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=600&fit=crop",
+                    "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&h=400&fit=crop"
+                ],
+                verified: true
+            }
+        ];
+
+        // ============== STATE ==============
+        let currentUser = null;
+        let currentCardIndex = 0;
+        let currentChatUser = null;
+        let matches = [];
+        let conversations = {};
+        let uploadedPhotos = [];
+        let isSubscribed = false;
+
+        // ============== INITIALIZATION ==============
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            animateOnScroll();
+        });
+
+        function initApp() {
+            // Load user from localStorage
+            const savedUser = localStorage.getItem('matchnchat_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateUIForLoggedInUser();
+            }
+            
+            // Load matches
+            const savedMatches = localStorage.getItem('matchnchat_matches');
+            if (savedMatches) {
+                matches = JSON.parse(savedMatches);
+            }
+            
+            // Load conversations
+            const savedConversations = localStorage.getItem('matchnchat_conversations');
+            if (savedConversations) {
+                conversations = JSON.parse(savedConversations);
+            }
+            
+            // Load subscription status
+            const savedSubscription = localStorage.getItem('matchnchat_subscription');
+            if (savedSubscription) {
+                isSubscribed = JSON.parse(savedSubscription);
+            }
+            
+            // Initialize card stack
+            renderCardStack();
+            updateMatchesPage();
+            updateChatList();
+            updateNotifications();
+        }
+
+        // ============== NAVIGATION ==============
+        function navigateTo(pageId) {
+            // Check authentication for protected pages
+            const protectedPages = ['browse', 'matches', 'chat', 'profile', 'settings', 'subscription'];
+            if (protectedPages.includes(pageId) && !currentUser) {
+                showToast('Please login to continue');
+                pageId = 'login';
+            }
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show target page
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            
+            // Update navigation active states
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.page === pageId) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Special handling for pages
+            if (pageId === 'browse') {
+                renderCardStack();
+            } else if (pageId === 'matches') {
+                updateMatchesPage();
+            } else if (pageId === 'chat') {
+                updateChatList();
+            } else if (pageId === 'profile') {
+                updateProfilePage();
+            }
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+            
+            // Close dropdown
+            document.getElementById('profileDropdown').classList.add('hidden');
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('profileDropdown');
+            const btn = document.getElementById('profileDropdownBtn');
+            if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // ============== AUTHENTICATION ==============
+        function handleSignup(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            const user = {
+                id: Date.now(),
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                email: formData.get('email'),
+                age: parseInt(formData.get('age')),
+                gender: formData.get('gender'),
+                location: formData.get('location'),
+                bio: formData.get('bio'),
+                photos: uploadedPhotos.length > 0 ? uploadedPhotos : ['https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'],
+                likes: 0,
+                matchesCount: 0,
+                views: 0
+            };
+            
+            currentUser = user;
+            localStorage.setItem('matchnchat_user', JSON.stringify(user));
+            
+            showToast('Account created successfully!');
+            updateUIForLoggedInUser();
+            navigateTo('browse');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // For demo, create a mock user
+            currentUser = {
+                id: Date.now(),
+                firstName: 'John',
+                lastName: 'Doe',
+                email: formData.get('email'),
+                age: 28,
+                gender: 'male',
+                location: 'New York, NY',
+                bio: 'Adventure seeker and coffee enthusiast. Love hiking, photography, and trying new restaurants.',
+                photos: ['https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'],
+                likes: 24,
+                matchesCount: 8,
+                views: 156
+            };
+            
+            localStorage.setItem('matchnchat_user', JSON.stringify(currentUser));
+            
+            showToast('Welcome back!');
+            updateUIForLoggedInUser();
+            navigateTo('browse');
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('matchnchat_user');
+            document.getElementById('navButtons').classList.remove('hidden');
+            document.getElementById('userNav').classList.add('hidden');
+            document.getElementById('userNav').classList.remove('flex');
+            showToast('Logged out successfully');
+            navigateTo('home');
+        }
+
+        function updateUIForLoggedInUser() {
+            document.getElementById('navButtons').classList.add('hidden');
+            document.getElementById('userNav').classList.remove('hidden');
+            document.getElementById('userNav').classList.add('flex');
+            
+            if (currentUser && currentUser.photos && currentUser.photos[0]) {
+                document.getElementById('navProfilePic').src = currentUser.photos[0];
+            }
+            
+            updateProfilePage();
+        }
+
+        // ============== PHOTO UPLOAD ==============
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedPhotos.push(e.target.result);
+                renderUploadedPhotos();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderUploadedPhotos() {
+            const container = document.getElementById('photoUploadArea');
+            if (!container) return;
+            
+            container.innerHTML = uploadedPhotos.map((photo, index) => `
+                <div class="photo-item relative">
+                    <img src="${photo}" alt="Photo ${index + 1}" class="w-full h-full object-cover">
+                    <button type="button" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-[var(--error)] flex items-center justify-center" onclick="removePhoto(${index})">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                            <path d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            `).join('') + `
+                <label class="photo-item bg-[var(--bg-elevated)] border-2 border-dashed border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer flex items-center justify-center ${uploadedPhotos.length >= 5 ? 'hidden' : ''}">
+                    <input type="file" class="hidden" accept="image/*" onchange="handlePhotoUpload(event)">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--fg-muted)" stroke-width="2">
+                        <path d="M12 5v14m-7-7h14"/>
+                    </svg>
+                </label>
+            `;
+        }
+
+        function removePhoto(index) {
+            uploadedPhotos.splice(index, 1);
+            renderUploadedPhotos();
+        }
+
+        // ============== BROWSE / CARD STACK ==============
+        function renderCardStack() {
+            const container = document.getElementById('cardStack');
+            if (!container) return;
+            
+            const availableUsers = sampleUsers.filter(u => !matches.find(m => m.id === u.id));
+            
+            if (availableUsers.length === 0 || currentCardIndex >= availableUsers.length) {
+                container.innerHTML = `
+                    <div class="h-full flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--fg-muted)" stroke-width="1.5">
+                                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-xl font-semibold mb-2">No More Profiles</h3>
+                            <p class="text-[var(--fg-secondary)] mb-6">Check back later for new people!</p>
+                            <button class="btn-primary" onclick="resetBrowse()"><span>Refresh</span></button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const cardsToShow = availableUsers.slice(currentCardIndex, currentCardIndex + 3).reverse();
+            
+            container.innerHTML = cardsToShow.map((user, index) => {
+                const stackIndex = cardsToShow.length - 1 - index;
+                return `
+                    <div class="profile-card absolute inset-0 ${index === cardsToShow.length - 1 ? 'z-10' : ''}" 
+                         style="transform: scale(${1 - stackIndex * 0.05}) translateY(${stackIndex * 10}px); z-index: ${10 - stackIndex};"
+                         data-user-id="${user.id}">
+                        <img src="${user.photos[0]}" alt="${user.name}" class="w-full h-full object-cover">
+                        <div class="profile-card-overlay"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h3 class="font-display text-2xl font-bold">${user.name}, ${user.age}</h3>
+                                ${user.verified ? `
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" stroke="white" stroke-width="2">
+                                        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                    </svg>
+                                ` : ''}
+                            </div>
+                            <p class="text-sm text-[var(--fg-secondary)] flex items-center gap-1 mb-3">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                </svg>
+                                ${user.distance}
+                            </p>
+                            <p class="text-sm text-[var(--fg-secondary)] line-clamp-2">${user.bio}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('nearbyCount').textContent = `${availableUsers.length - currentCardIndex} people nearby`;
+        }
+
+        function handleLike() {
+            const availableUsers = sampleUsers.filter(u => !matches.find(m => m.id === u.id));
+            if (currentCardIndex >= availableUsers.length) return;
+            
+            const user = availableUsers[currentCardIndex];
+            const card = document.querySelector('.profile-card[data-user-id="' + user.id + '"]');
+            
+            if (card) {
+                card.classList.add('swiping-right');
+                
+                setTimeout(() => {
+                    // 50% chance of match for demo
+                    if (Math.random() > 0.5) {
+                        showMatchAnimation(user);
+                    }
+                    currentCardIndex++;
+                    renderCardStack();
+                }, 400);
+            }
+        }
+
+        function handleSkip() {
+            const availableUsers = sampleUsers.filter(u => !matches.find(m => u.id === u.id));
+            if (currentCardIndex >= availableUsers.length) return;
+            
+            const user = availableUsers[currentCardIndex];
+            const card = document.querySelector('.profile-card[data-user-id="' + user.id + '"]');
+            
+            if (card) {
+                card.classList.add('swiping-left');
+                setTimeout(() => {
+                    currentCardIndex++;
+                    renderCardStack();
+                }, 400);
+            }
+        }
+
+        function handleSuperLike() {
+            if (!isSubscribed) {
+                showToast('Upgrade to Premium for Super Likes!');
+                navigateTo('subscription');
+                return;
+            }
+            handleLike();
+            showToast('Super Like sent!');
+        }
+
+        function resetBrowse() {
+            currentCardIndex = 0;
+            renderCardStack();
+        }
+
+        // ============== MATCH ANIMATION ==============
+        function showMatchAnimation(user) {
+            matches.push(user);
+            localStorage.setItem('matchnchat_matches', JSON.stringify(matches));
+            
+            const animation = document.getElementById('matchAnimation');
+            document.getElementById('matchUser1Photo').src = currentUser.photos[0];
+            document.getElementById('matchUser2Photo').src = user.photos[0];
+            document.getElementById('matchUserName').textContent = user.name;
+            
+            animation.classList.add('active');
+            
+            // Store for potential chat
+            currentChatUser = user;
+            
+            updateNotifications();
+        }
+
+        function closeMatchAnimation() {
+            document.getElementById('matchAnimation').classList.remove('active');
+            updateMatchesPage();
+            updateChatList();
+        }
+
+        function startChatWithMatch() {
+            document.getElementById('matchAnimation').classList.remove('active');
+            navigateTo('chat');
+            
+            // Open chat with matched user
+            setTimeout(() => {
+                openChat(currentChatUser);
+            }, 100);
+        }
+
+        // ============== MATCHES PAGE ==============
+        function updateMatchesPage() {
+            const newList = document.getElementById('newMatchesList');
+            const allGrid = document.getElementById('allMatchesGrid');
+            const noMatches = document.getElementById('noMatches');
+            
+            if (!newList || !allGrid) return;
+            
+            if (matches.length === 0) {
+                newList.innerHTML = '';
+                allGrid.innerHTML = '';
+                noMatches.classList.remove('hidden');
+                return;
+            }
+            
+            noMatches.classList.add('hidden');
+            
+            // New matches (horizontal scroll)
+            newList.innerHTML = matches.map(match => `
+                <button class="flex flex-col items-center gap-2 flex-shrink-0" onclick="openChat(${JSON.stringify(match).replace(/"/g, '&quot;')})">
+                    <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-[var(--accent)]">
+                        <img src="${match.photos[0]}" alt="${match.name}" class="w-full h-full object-cover">
+                    </div>
+                    <span class="text-sm font-medium">${match.name.split(' ')[0]}</span>
+                </button>
+            `).join('');
+            
+            // All matches grid
+            allGrid.innerHTML = matches.map(match => `
+                <button class="gradient-card rounded-2xl overflow-hidden border border-[var(--border)] text-left hover:border-[var(--accent)] transition-colors" onclick="openChat(${JSON.stringify(match).replace(/"/g, '&quot;')})">
+                    <div class="aspect-[3/4] relative">
+                        <img src="${match.photos[0]}" alt="${match.name}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                        <div class="absolute bottom-3 left-3">
+                            <p class="font-semibold">${match.name}, ${match.age}</p>
+                            <p class="text-xs text-[var(--fg-secondary)]">${match.distance}</p>
+                        </div>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        // ============== CHAT ==============
+        function updateChatList() {
+            const chatList = document.getElementById('chatList');
+            const noChats = document.getElementById('noChats');
+            
+            if (!chatList) return;
+            
+            if (matches.length === 0) {
+                chatList.innerHTML = '';
+                if (noChats) noChats.classList.remove('hidden');
+                return;
+            }
+            
+            if (noChats) noChats.classList.add('hidden');
+            
+            chatList.innerHTML = matches.map(match => {
+                const conversation = conversations[match.id] || [];
+                const lastMessage = conversation[conversation.length - 1];
+                const unreadCount = conversation.filter(m => !m.read && m.received).length;
+                
+                return `
+                    <button class="w-full p-4 flex items-center gap-4 hover:bg-[var(--bg-elevated)] transition-colors text-left border-b border-[var(--border)]" onclick='openChat(${JSON.stringify(match).replace(/'/g, "&#39;")})'>
+                        <div class="relative">
+                            <div class="w-14 h-14 rounded-full overflow-hidden">
+                                <img src="${match.photos[0]}" alt="${match.name}" class="w-full h-full object-cover">
+                            </div>
+                            ${unreadCount > 0 ? `<span class="notification-badge">${unreadCount}</span>` : ''}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-semibold">${match.name}</h4>
+                                <span class="text-xs text-[var(--fg-muted)]">${lastMessage ? formatTime(lastMessage.time) : ''}</span>
+                            </div>
+                            <p class="text-sm text-[var(--fg-secondary)] truncate">${lastMessage ? lastMessage.text : 'Start a conversation!'}</p>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function openChat(user) {
+            if (typeof user === 'string') {
+                user = JSON.parse(user);
+            }
+            
+            currentChatUser = user;
+            
+            // Check subscription
+            if (!isSubscribed) {
+                showToast('Subscribe to send messages');
+                navigateTo('subscription');
+                return;
+            }
+            
+            // Mobile: hide list, show chat
+            document.getElementById('conversationsList').classList.add('hidden', 'md:block');
+            document.getElementById('chatWindow').classList.remove('hidden');
+            document.getElementById('chatWindow').classList.add('flex');
+            document.getElementById('chatPlaceholder').classList.add('hidden');
+            document.getElementById('activeChat').classList.remove('hidden');
+            document.getElementById('activeChat').classList.add('flex');
+            
+            // Set user info
+            document.getElementById('chatUserPhoto').src = user.photos[0];
+            document.getElementById('chatUserName').textContent = user.name;
+            
+            // Load messages
+            renderMessages();
+        }
+
+        function backToChatList() {
+            document.getElementById('conversationsList').classList.remove('hidden', 'md:block');
+            document.getElementById('chatWindow').classList.add('hidden');
+            document.getElementById('chatWindow').classList.remove('flex');
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('chatMessages');
+            if (!container || !currentChatUser) return;
+            
+            const messages = conversations[currentChatUser.id] || [];
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-[var(--fg-secondary)]">No messages yet. Say hello!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = messages.map(msg => `
+                <div class="chat-bubble ${msg.sent ? 'sent' : 'received'}">
+                    ${msg.type === 'location' ? `
+                        <div class="flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            </svg>
+                            <span>Shared location</span>
+                        </div>
+                    ` : msg.type === 'photo' ? `
+                        <img src="${msg.photo}" alt="Shared photo" class="rounded-lg max-w-full">
+                    ` : msg.text}
+                </div>
+            `).join('');
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            if (!input || !currentChatUser) return;
+            
+            const text = input.value.trim();
+            if (!text) return;
+            
+            if (!conversations[currentChatUser.id]) {
+                conversations[currentChatUser.id] = [];
+            }
+            
+            conversations[currentChatUser.id].push({
+                text: text,
+                sent: true,
+                time: Date.now(),
+                read: true
+            });
+            
+            localStorage.setItem('matchnchat_conversations', JSON.stringify(conversations));
+            
+            input.value = '';
+            renderMessages();
+            updateChatList();
+            
+            // Simulate reply
+            setTimeout(() => {
+                simulateReply();
+            }, 1000 + Math.random() * 2000);
+        }
+
+        function handleMessageKeypress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function simulateReply() {
+            if (!currentChatUser) return;
+            
+            const replies = [
+                "That sounds great!",
+                "I'd love to hear more about that.",
+                "Haha, you're funny!",
+                "What are your plans for the weekend?",
+                "I really enjoy our conversations.",
+                "That's so interesting!",
+                "Tell me more!",
+                "I feel the same way!"
+            ];
+            
+            const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            
+            if (!conversations[currentChatUser.id]) {
+                conversations[currentChatUser.id] = [];
+            }
+            
+            conversations[currentChatUser.id].push({
+                text: randomReply,
+                sent: false,
+                received: true,
+                time: Date.now(),
+                read: false
+            });
+            
+            localStorage.setItem('matchnchat_conversations', JSON.stringify(conversations));
+            renderMessages();
+            updateChatList();
+            updateNotifications();
+        }
+
+        function attachPhoto() {
+            if (!isSubscribed) {
+                showToast('Subscribe to share photos');
+                return;
+            }
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (!conversations[currentChatUser.id]) {
+                        conversations[currentChatUser.id] = [];
+                    }
+                    
+                    conversations[currentChatUser.id].push({
+                        type: 'photo',
+                        photo: e.target.result,
+                        sent: true,
+                        time: Date.now()
+                    });
+                    
+                    localStorage.setItem('matchnchat_conversations', JSON.stringify(conversations));
+                    renderMessages();
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        }
+
+        function shareLocation() {
+            if (!isSubscribed) {
+                showToast('Subscribe to share location');
+                return;
+            }
+            
+            if (!currentChatUser) return;
+            
+            if (!conversations[currentChatUser.id]) {
+                conversations[currentChatUser.id] = [];
+            }
+            
+            conversations[currentChatUser.id].push({
+                type: 'location',
+                text: 'My current location',
+                sent: true,
+                time: Date.now()
+            });
+            
+            localStorage.setItem('matchnchat_conversations', JSON.stringify(conversations));
+            renderMessages();
+            showToast('Location shared!');
+        }
+
+        function openChatOptions() {
+            showToast('Chat options coming soon!');
+        }
+
+        // ============== PROFILE ==============
+        function updateProfilePage() {
+            if (!currentUser) return;
+            
+            const fullName = currentUser.firstName + ' ' + currentUser.lastName;
+            document.getElementById('profileName').textContent = `${fullName}, ${currentUser.age}`;
+            document.getElementById('profileLocation').innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                </svg>
+                ${currentUser.location}
+            `;
+            document.getElementById('profileBio').textContent = currentUser.bio || 'No bio yet.';
+            document.getElementById('profileMainPhoto').src = currentUser.photos[0];
+            document.getElementById('profileCover').src = currentUser.photos[0];
+            
+            document.getElementById('profileLikes').textContent = currentUser.likes || 0;
+            document.getElementById('profileMatches').textContent = matches.length;
+            document.getElementById('profileViews').textContent = currentUser.views || 0;
+            
+            // Photo grid
+            const photoGrid = document.getElementById('profilePhotoGrid');
+            if (photoGrid) {
+                photoGrid.innerHTML = currentUser.photos.map(photo => `
+                    <div class="photo-item">
+                        <img src="${photo}" alt="Profile photo" class="w-full h-full object-cover">
+                    </div>
+                `).join('');
+            }
+            
+            // Edit form values
+            document.getElementById('editName').value = fullName;
+            document.getElementById('editAge').value = currentUser.age;
+            document.getElementById('editLocation').value = currentUser.location;
+            document.getElementById('editBio').value = currentUser.bio || '';
+            
+            // Settings email
+            document.getElementById('settingsEmail').textContent = currentUser.email;
+        }
+
+        function toggleEditMode() {
+            const form = document.getElementById('editProfileForm');
+            form.classList.toggle('hidden');
+        }
+
+        function saveProfile(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            currentUser.firstName = formData.get('name').split(' ')[0] || currentUser.firstName;
+            currentUser.lastName = formData.get('name').split(' ').slice(1).join(' ') || currentUser.lastName;
+            currentUser.age = parseInt(formData.get('age'));
+            currentUser.location = formData.get('location');
+            currentUser.bio = formData.get('bio');
+            
+            localStorage.setItem('matchnchat_user', JSON.stringify(currentUser));
+            
+            updateProfilePage();
+            toggleEditMode();
+            showToast('Profile updated!');
+        }
+
+        // ============== SUBSCRIPTION ==============
+        function handleSubscription() {
+            // Simulate payment
+            isSubscribed = true;
+            localStorage.setItem('matchnchat_subscription', JSON.stringify(true));
+            showToast('Welcome to Premium!');
+            navigateTo('browse');
+        }
+
+        // ============== NOTIFICATIONS ==============
+        function updateNotifications() {
+            let totalUnread = 0;
+            
+            Object.values(conversations).forEach(conv => {
+                totalUnread += conv.filter(m => !m.read && m.received).length;
+            });
+            
+            // Add match notifications
+            totalUnread += matches.length;
+            
+            const chatNotif = document.getElementById('chatNotification');
+            const mobileNotif = document.getElementById('mobileChatNotification');
+            
+            if (totalUnread > 0) {
+                if (chatNotif) {
+                    chatNotif.classList.remove('hidden');
+                    chatNotif.textContent = totalUnread > 9 ? '9+' : totalUnread;
+                }
+                if (mobileNotif) {
+                    mobileNotif.classList.remove('hidden');
+                    mobileNotif.textContent = totalUnread > 9 ? '9+' : totalUnread;
+                }
+            } else {
+                if (chatNotif) chatNotif.classList.add('hidden');
+                if (mobileNotif) mobileNotif.classList.add('hidden');
+            }
+        }
+
+        // ============== UTILITIES ==============
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            
+            if (date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            }
+            
+            const diff = now - date;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            if (days === 1) return 'Yesterday';
+            if (days < 7) return `${days}d`;
+            
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function openFilters() {
+            showToast('Filters coming soon!');
+        }
+
+        // ============== SCROLL ANIMATIONS ==============
+        function animateOnScroll() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('visible');
+                        }, index * 100);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.stagger-item').forEach(item => {
+                observer.observe(item);
+            });
+        }
+
+        // Run animations on page load
+        setTimeout(() => {
+            document.querySelectorAll('.stagger-item').forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('visible');
+                }, index * 150);
+            });
+        }, 100);
+    </script>
+</body>
+</html>
